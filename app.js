@@ -6,14 +6,7 @@ const config = {
     chunk_size: 60000,
     gop_cache: true,
     ping: 30,
-    ping_timeout: 60,
-	/*
-    ssl: {
-      port: 443,
-      key: './privatekey.pem',
-      cert: './certificate.pem',
-    }
-	*/
+    ping_timeout: 60
   },
   http: {
     port: 8000,

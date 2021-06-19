@@ -119,6 +119,8 @@ class NodeRtmpSession {
     this.parserBytes = 0;
     this.parserBasicBytes = 0;
     this.parserPacket = null;
+    this.parserPacketPrev = null;
+    this.dataMessageArray = [];
     this.inPackets = new Map();
 
     this.inChunkSize = RTMP_CHUNK_SIZE;
@@ -413,7 +415,7 @@ class NodeRtmpSession {
             this.parserBuffer[this.parserBytes++] = data[p + offset++];
           }
           if (this.parserBytes >= size) {
-            this.rtmpPacketParse();
+            this.rtmpPacketParse(data);
             this.parserState = RTMP_PARSE_EXTENDED_TIMESTAMP;
           }
           break;
@@ -485,7 +487,7 @@ class NodeRtmpSession {
     }
   }
 
-  rtmpPacketParse() {
+  rtmpPacketParse(data) {
     let fmt = this.parserBuffer[0] >> 6;
     let cid = 0;
     if (this.parserBasicBytes === 2) {
@@ -496,6 +498,7 @@ class NodeRtmpSession {
       cid = this.parserBuffer[0] & 0x3f;
     }
     let hasp = this.inPackets.has(cid);
+    this.parserPacketPrev = this.parserPacket
     if (!hasp) {
       this.parserPacket = RtmpPacket.create(fmt, cid);
       this.inPackets.set(cid, this.parserPacket);
@@ -506,10 +509,24 @@ class NodeRtmpSession {
     this.parserPacket.header.cid = cid;
     this.rtmpChunkMessageHeaderRead();
 
+    if (this.parserPacket.header.type == RTMP_TYPE_DATA && this.metaData != null) {
+      Logger.error("Found Signature packet", this.parserPacket)
+      // TODO create function to convert all payloads to separate base64 and print for comparisons
+      let byteBuf = Buffer.alloc(this.parserPacket.header.length, data, 'base64')
+      this.dataMessageArray.push(byteBuf.toString('base64'))
+    }
+
     if (this.parserPacket.header.type > RTMP_TYPE_METADATA) {
+      let byteBuf = Buffer.alloc(this.parserPacket.header.length, data, 'base64')
+      this.dataMessageArray.push(byteBuf.toString('base64'))
       Logger.error("rtmp packet parse error.", this.parserPacket);
+      Logger.error("Previous Packet was:", this.parserPacketPrev)
       this.stop();
     }
+  }
+
+  printPacketBytes() {
+    this.dataMessageArray.forEach(base64String => console.log(base64String));
   }
 
   rtmpChunkMessageHeaderRead() {
@@ -543,6 +560,7 @@ class NodeRtmpSession {
   }
 
   rtmpHandler() {
+    console.log(`type: ${this.parserPacket.header.type}`)
     switch (this.parserPacket.header.type) {
       case RTMP_TYPE_SET_CHUNK_SIZE:
       case RTMP_TYPE_ABORT:
@@ -817,6 +835,9 @@ class NodeRtmpSession {
             });
           }
         }
+        break;
+      case "@setSignature":
+        Logger.error(`Signature received: ${dataMessage.dataObj.signature}`)
         break;
     }
   }
