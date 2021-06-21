@@ -2,7 +2,18 @@
 //  Created by Mingliang Chen on 18/4/1.
 //  illuspas[a]gmail.com
 //  Copyright (c) 2018 Nodemedia. All rights reserved.
-//
+
+// RSA
+const NodeRSA = require('node-rsa');
+
+const PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
+"MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHcyTFikOhMTDuiisl6kwRpSBmrE" +
+"stw1+gYboOQtugugpYVHcSwIUM9lFfiGN5zn6++bU8DDQScnIU4D7Zg6S3/h1dyq" +
+"yHjIzSD9fvCcbaJlFC32mrNOSPhbF+irpHaIbS4e2V8qd6RdWerqJaXM7OsFEKyd" +
+"GzDW7G8lr5jIrAddAgMBAAE=\n" +
+"-----END PUBLIC KEY-----";
+
+const decryptionKey = new NodeRSA(PUBLIC_KEY);
 
 const QueryString = require("querystring");
 const AV = require("./node_core_av");
@@ -836,8 +847,13 @@ class NodeRtmpSession {
           }
         }
         break;
-      case "@setSignature":
-        Logger.error(`Signature received: ${dataMessage.dataObj.signature}`)
+      case "@setSignature":      
+        let signature = dataMessage.dataObj.signature;
+        // Logger.error(`Signature received: ${signature}`)
+        signature = Buffer.from(signature, 'hex');
+        const decrypted = decryptionKey.decryptPublic(signature, 'hex');
+        const framesHash = decrypted.replace("3031300d060960864801650304020105000420","")
+        Logger.error(`Decrypted Signature: ${framesHash}`);
         break;
     }
   }

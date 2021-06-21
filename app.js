@@ -15,11 +15,6 @@ const config = {
     allow_origin: '*',
     api: true
   },
-  https: {
-    port: 8443,
-    key: './privatekey.pem',
-    cert: './certificate.pem',
-  },
   auth: {
     api: true,
     api_user: 'admin',
