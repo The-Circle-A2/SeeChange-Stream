@@ -847,8 +847,8 @@ class NodeRtmpSession {
           }
         }
         break;
-      case "@setSignature":      
-        let signature = dataMessage.dataObj.signature;
+      case "@setSignature":
+        let signature = dataMessage.signature;
         // Logger.error(`Signature received: ${signature}`)
         signature = Buffer.from(signature, 'hex');
         const decrypted = decryptionKey.decryptPublic(signature, 'hex');

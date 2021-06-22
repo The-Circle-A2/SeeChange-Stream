@@ -964,7 +964,7 @@ const rtmpCmdCode = {
 
 const rtmpDataCode = {
   "@setDataFrame": ["method", "dataObj"],
-  "@setSignature": ["method", "dataObj"],
+  "@setSignature": ["type", "signature", "timestamps"],
   "onFI": ["info"],
   "onMetaData": ["dataObj"],
   "|RtmpSampleAccess": ["bool1", "bool2"],
