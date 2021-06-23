@@ -1,5 +1,5 @@
 const NodeMediaServer = require('./');
-const dotenv = require('dotenv');
+const dotenv = require('dotenv').config();
 
 const config = {
   rtmp: {
