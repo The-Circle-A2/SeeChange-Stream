@@ -1,3 +1,4 @@
+const { listenerCount } = require("events");
 const _ = require("lodash");
 const NodeTransServer = require("../../node_trans_server");
 
@@ -28,6 +29,7 @@ function postStreamTrans(req, res, next) {
 
 function getStreams(req, res, next) {
   let stats = {};
+  let list = [];
 
   this.sessions.forEach(function(session, id) {
     if (session.isStarting) {
@@ -107,6 +109,7 @@ function getStreams(req, res, next) {
       }
     }
   });
+  list.push(stats);
   res.json(stats);
 }
 

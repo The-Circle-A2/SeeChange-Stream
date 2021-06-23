@@ -16,7 +16,7 @@ const config = {
     api: true
   },
   auth: {
-    api: true,
+    api: false,
     api_user: 'admin',
     api_pass: 'admin',
     play: false,

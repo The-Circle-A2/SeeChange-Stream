@@ -6,6 +6,9 @@
 // RSA
 const NodeRSA = require('node-rsa');
 
+// Encryption
+const crypto = require('crypto');
+
 const PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" +
 "MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHcyTFikOhMTDuiisl6kwRpSBmrE" +
 "stw1+gYboOQtugugpYVHcSwIUM9lFfiGN5zn6++bU8DDQScnIU4D7Zg6S3/h1dyq" +
@@ -120,6 +123,9 @@ class NodeRtmpSession {
     this.id = NodeCoreUtils.generateNewSessionID();
     this.ip = socket.remoteAddress;
     this.TAG = "rtmp";
+  
+    this.AUDIO_PACKETS = new Map(); // AUDIO PACKET MAP
+    this.VIDEO_PACKETS = new Map(); // VIDEO PACKET MAP
 
     this.handshakePayload = Buffer.alloc(RTMP_HANDSHAKE_SIZE);
     this.handshakeState = RTMP_HANDSHAKE_UNINIT;
@@ -617,6 +623,12 @@ class NodeRtmpSession {
   rtmpEventHandler() { }
 
   rtmpAudioHandler() {
+    // Add packet to audio list
+    let timestamp = this.parserPacket.header.timestamp;    
+    const buffer = this.parserPacket.payload.buffer;  
+
+    this.AUDIO_PACKETS.set(timestamp, buffer);
+
     let payload = this.parserPacket.payload.slice(0, this.parserPacket.header.length);
     let sound_format = (payload[0] >> 4) & 0x0f;
     let sound_type = payload[0] & 0x01;
@@ -722,6 +734,12 @@ class NodeRtmpSession {
   }
 
   rtmpVideoHandler() {
+    // Add packet to video list
+    let timestamp = this.parserPacket.header.timestamp;    
+    const buffer = this.parserPacket.payload.buffer;  
+
+    this.VIDEO_PACKETS.set(timestamp, buffer);
+
     let payload = this.parserPacket.payload.slice(0, this.parserPacket.header.length);
     let frame_type = (payload[0] >> 4) & 0x0f;
     let codec_id = payload[0] & 0x0f;
@@ -847,15 +865,60 @@ class NodeRtmpSession {
           }
         }
         break;
-      case "@setSignature":
+      case "@setSignature":    
+        let timestamps = dataMessage.timestamps;
         let signature = dataMessage.signature;
-        // Logger.error(`Signature received: ${signature}`)
         signature = Buffer.from(signature, 'hex');
+
+        let packets;
+        if(dataMessage.type == "AUDIO") packets = this.AUDIO_PACKETS;
+        if(dataMessage.type == "VIDEO") packets = this.VIDEO_PACKETS;                       
+
+        let collection = [];
+        
+        let bufferTimestampList = [];
+
+        timestamps.forEach((ts) => {
+          // Check if packet with timestamp exists in stored type list
+          let packet = packets.get(ts);          
+          collection.push(this.toBuffer(packet));
+          
+          // Delete packet from stored type list
+          if(dataMessage.type == "AUDIO") this.AUDIO_PACKETS.delete(ts);            
+          if(dataMessage.type == "VIDEO") this.VIDEO_PACKETS.delete(ts);
+
+          // Create buffer with byte size 8          
+          let buf = Buffer.alloc(8);
+          buf.write(ts.toString());
+
+          bufferTimestampList.push(buf);
+
+          // Push buffer timestamp to collection
+          collection.push(buf);
+        });      
+            
+
         const decrypted = decryptionKey.decryptPublic(signature, 'hex');
-        const framesHash = decrypted.replace("3031300d060960864801650304020105000420","")
+        const framesHash = decrypted.replace("3031300d060960864801650304020105000420","");        
+
+        let combinedBuffers = Buffer.concat(collection);
+        const hashedBuffer = crypto.createHash('sha256').update(combinedBuffers).digest('hex');
+
+        Logger.error(`Timestamp hash: ${Buffer.concat(bufferTimestampList)}`);
+        Logger.error(`Signature found: ${signature}`);
         Logger.error(`Decrypted Signature: ${framesHash}`);
+        Logger.error(`Hashed Buffers: ${hashedBuffer}`);
         break;
     }
+  }
+
+  toBuffer(ab) {
+      let buf = Buffer.alloc(ab.byteLength);
+      let view = new Uint8Array(ab);
+      for (let i = 0; i < buf.length; ++i) {
+          buf[i] = view[i];
+      }
+      return buf;
   }
 
   rtmpInvokeHandler() {
