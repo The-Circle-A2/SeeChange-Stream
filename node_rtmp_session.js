@@ -866,48 +866,48 @@ class NodeRtmpSession {
         }
         break;
       case "@setSignature":    
-        // let timestamps = dataMessage.timestamps;
-        // let signature = dataMessage.signature;
-        // signature = Buffer.from(signature, 'hex');
+        let timestamps = dataMessage.timestamps;
+        let signature = dataMessage.signature;
+        signature = Buffer.from(signature, 'hex');
 
-        // let packets;
-        // if(dataMessage.type == "AUDIO") packets = this.AUDIO_PACKETS;
-        // if(dataMessage.type == "VIDEO") packets = this.VIDEO_PACKETS;                       
+        let packets;
+        if(dataMessage.type == "AUDIO") packets = this.AUDIO_PACKETS;
+        if(dataMessage.type == "VIDEO") packets = this.VIDEO_PACKETS;                       
 
-        // let collection = [];
+        let collection = [];
         
-        // let bufferTimestampList = [];
+        let bufferTimestampList = [];
 
-        // timestamps.forEach((ts) => {
-        //   // Check if packet with timestamp exists in stored type list
-        //   let packet = packets.get(ts);          
-        //   collection.push(this.toBuffer(packet));
+        timestamps.forEach((ts) => {
+          // Check if packet with timestamp exists in stored type list
+          let packet = packets.get(ts);          
+          collection.push(this.toBuffer(packet));
           
-        //   // Delete packet from stored type list
-        //   if(dataMessage.type == "AUDIO") this.AUDIO_PACKETS.delete(ts);            
-        //   if(dataMessage.type == "VIDEO") this.VIDEO_PACKETS.delete(ts);
+          // Delete packet from stored type list
+          if(dataMessage.type == "AUDIO") this.AUDIO_PACKETS.delete(ts);            
+          if(dataMessage.type == "VIDEO") this.VIDEO_PACKETS.delete(ts);
 
-        //   // Create buffer with byte size 8          
-        //   let buf = Buffer.alloc(8);
-        //   buf.write(ts.toString());
+          // Create buffer with byte size 8          
+          let buf = Buffer.alloc(8);
+          buf.write(ts.toString());
 
-        //   bufferTimestampList.push(buf);
+          bufferTimestampList.push(buf);
 
-        //   // Push buffer timestamp to collection
-        //   // collection.push(buf);
-        // });      
+          // Push buffer timestamp to collection
+          collection.push(buf);
+        });      
             
 
-        // const decrypted = decryptionKey.decryptPublic(signature, 'hex');
-        // const framesHash = decrypted.replace("3031300d060960864801650304020105000420","");        
+        const decrypted = decryptionKey.decryptPublic(signature, 'hex');
+        const framesHash = decrypted.replace("3031300d060960864801650304020105000420","");        
 
-        // let combinedBuffers = Buffer.concat(collection);
-        // const hashedBuffer = crypto.createHash('sha256').update(combinedBuffers).digest('hex');
+        let combinedBuffers = Buffer.concat(collection);
+        const hashedBuffer = crypto.createHash('sha256').update(combinedBuffers).digest('hex');
 
-        // Logger.error(`Timestamp hash: ${Buffer.concat(bufferTimestampList)}`);
-        // Logger.error(`Signature found: ${signature}`);
-        // Logger.error(`Decrypted Signature: ${framesHash}`);
-        // Logger.error(`Hashed Buffers: ${hashedBuffer}`);
+        Logger.error(`Timestamp hash: ${Buffer.concat(bufferTimestampList)}`);
+        Logger.error(`Signature found: ${signature}`);
+        Logger.error(`Decrypted Signature: ${framesHash}`);
+        Logger.error(`Hashed Buffers: ${hashedBuffer}`);
         break;
     }
   }
