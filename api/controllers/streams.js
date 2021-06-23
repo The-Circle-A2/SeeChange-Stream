@@ -53,22 +53,22 @@ function getStreams(req, res, next) {
             stream: stream,
             clientId: session.id,
             connectCreated: session.connectTime,
-            bytes: session.socket.bytesRead,
-            ip: session.socket.remoteAddress,
-            audio: session.audioCodec > 0 ? {
-              codec: session.audioCodecName,
-              profile: session.audioProfileName,
-              samplerate: session.audioSamplerate,
-              channels: session.audioChannels
-            } : null,
-            video: session.videoCodec > 0 ? {
-              codec: session.videoCodecName,
-              width: session.videoWidth,
-              height: session.videoHeight,
-              profile: session.videoProfileName,
-              level: session.videoLevel,
-              fps: session.videoFps
-            } : null,
+            // bytes: session.socket.bytesRead,
+            // ip: session.socket.remoteAddress,
+            // audio: session.audioCodec > 0 ? {
+            //   codec: session.audioCodecName,
+            //   profile: session.audioProfileName,
+            //   samplerate: session.audioSamplerate,
+            //   channels: session.audioChannels
+            // } : null,
+            // video: session.videoCodec > 0 ? {
+            //   codec: session.videoCodecName,
+            //   width: session.videoWidth,
+            //   height: session.videoHeight,
+            //   profile: session.videoProfileName,
+            //   level: session.videoLevel,
+            //   fps: session.videoFps
+            // } : null,
           },Object);
           break;
         }
