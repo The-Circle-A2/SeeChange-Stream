@@ -9,8 +9,10 @@ module.exports = (message) => {
 
     message = signMessage(message);
 
+    console.log(message)
+
     axios.post(process.env.LOGSERVER_URL, message)
-      .then((res) => {
+      .then((res) => {      
         Logger.log('[SeeChange - Logging] Log created', res);
       }, (error) => {
         Logger.error('[SeeChange - Logging] Log error', error);

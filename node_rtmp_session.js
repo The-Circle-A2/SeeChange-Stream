@@ -127,6 +127,10 @@ class NodeRtmpSession {
     this.AUDIO_PACKETS = new Map(); // AUDIO PACKET MAP
     this.VIDEO_PACKETS = new Map(); // VIDEO PACKET MAP
 
+
+    this.firstAudioPacket = true;
+    this.firstVideoPacket = true;
+
     this.isFirstTime = true;
 
     this.handshakePayload = Buffer.alloc(RTMP_HANDSHAKE_SIZE);
@@ -636,7 +640,11 @@ class NodeRtmpSession {
     let timestamp = this.parserPacket.header.timestamp;    
     const buffer = this.parserPacket.payload.buffer;  
 
-    this.AUDIO_PACKETS.set(timestamp, buffer);
+    if(this.firstAudioPacket) {
+      this.firstAudioPacket = false;    
+    } else {
+      this.AUDIO_PACKETS.set(timestamp, buffer);
+    }
 
     let payload = this.parserPacket.payload.slice(0, this.parserPacket.header.length);
     let sound_format = (payload[0] >> 4) & 0x0f;
@@ -747,7 +755,11 @@ class NodeRtmpSession {
     let timestamp = this.parserPacket.header.timestamp;    
     const buffer = this.parserPacket.payload.buffer;  
 
-    this.VIDEO_PACKETS.set(timestamp, buffer);
+    if(this.firstVideoPacket) {
+      this.firstVideoPacket = false;    
+    } else {
+      this.VIDEO_PACKETS.set(timestamp, buffer);
+    }
 
     let payload = this.parserPacket.payload.slice(0, this.parserPacket.header.length);
     let frame_type = (payload[0] >> 4) & 0x0f;
@@ -898,7 +910,7 @@ class NodeRtmpSession {
 
           // Create buffer with byte size 8          
           let buf = Buffer.alloc(8);
-          buf.write(ts.toString());
+          // buf.writeBigInt64BE(ts);
 
           bufferTimestampList.push(buf);
 
@@ -913,8 +925,9 @@ class NodeRtmpSession {
         let combinedBuffers = Buffer.concat(collection);
         const hashedBuffer = crypto.createHash('sha256').update(combinedBuffers).digest('hex');
 
-        Logger.error(`Timestamp hash: ${Buffer.concat(bufferTimestampList)}`);
-        Logger.error(`Signature found: ${signature}`);
+        // console.log(`Timestamp hash: ${Buffer.concat(bufferTimestampList).toString('hex')}`);
+
+        Logger.error(`Signature found: ${signature.toString('hex')}`);
         Logger.error(`Decrypted Signature: ${framesHash}`);
         Logger.error(`Hashed Buffers: ${hashedBuffer}`);
         break;
