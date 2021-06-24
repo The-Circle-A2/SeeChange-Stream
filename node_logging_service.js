@@ -6,11 +6,12 @@ const CryptoJS = require("crypto-js");
 const Logger = require("./node_core_logger");
 
 module.exports = (message) => {
+
     message = signMessage(message);
 
     axios.post(process.env.LOGSERVER_URL, message)
       .then((res) => {
-        Logger.info('[SeeChange - Logging] Log created');
+        Logger.log('[SeeChange - Logging] Log created', res);
       }, (error) => {
         Logger.error('[SeeChange - Logging] Log error', error);
       });
