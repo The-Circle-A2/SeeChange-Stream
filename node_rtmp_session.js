@@ -127,6 +127,8 @@ class NodeRtmpSession {
     this.AUDIO_PACKETS = new Map(); // AUDIO PACKET MAP
     this.VIDEO_PACKETS = new Map(); // VIDEO PACKET MAP
 
+    this.isFirstTime = true;
+
     this.handshakePayload = Buffer.alloc(RTMP_HANDSHAKE_SIZE);
     this.handshakeState = RTMP_HANDSHAKE_UNINIT;
     this.handshakeBytes = 0;
@@ -223,7 +225,7 @@ class NodeRtmpSession {
       }
 
       Logger.log(`[rtmp disconnect] id=${this.id}`);
-      context.nodeEvent.emit("doneConnect", this.id, this.connectCmdObj);
+      context.nodeEvent.emit("doneConnect", this.id, this.connectCmdObj);      
 
       context.sessions.delete(this.id);
       this.socket.destroy();
@@ -242,7 +244,7 @@ class NodeRtmpSession {
   }
 
   onSocketClose() {
-    // Logger.log('onSocketClose');
+    Logger.log('onSocketClose: sluitend');      
     this.stop();
   }
 
@@ -260,6 +262,13 @@ class NodeRtmpSession {
     let bytes = data.length;
     let p = 0;
     let n = 0;
+
+
+    if(this.isFirstTime) {
+      this.isFirstTime = false;
+      Logger.log('onSocketStart: startend');      
+    }
+
     while (bytes > 0) {
       switch (this.handshakeState) {
         case RTMP_HANDSHAKE_UNINIT:

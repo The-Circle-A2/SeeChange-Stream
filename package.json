@@ -15,7 +15,7 @@
     "flv",
     "server"
   ],
-  "author": "Mingliang Chen",
+  "author": "Wouter Molhoek",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/illuspas/Node-Media-Server/issues"
@@ -30,7 +30,10 @@
     "lodash": ">=4.17.13",
     "mkdirp": "1.0.3",
     "node-rsa": "^1.1.1",
-    "ws": "^7.4.6"
+    "ws": "^7.4.6",
+    "axios": "^0.21.1",
+    "crypto-js": "^4.0.0",
+    "jsencrypt": "^3.2.0"
   },
   "engines": {
     "node": ">=8.0.0"

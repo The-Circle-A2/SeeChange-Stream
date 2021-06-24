@@ -20,6 +20,7 @@ class NodeRtmpServer {
   constructor(config) {
     config.rtmp.port = this.port = config.rtmp.port ? config.rtmp.port : RTMP_PORT;
     this.tcpServer = Net.createServer((socket) => {
+      console.log(config)
       let session = new NodeRtmpSession(config, socket);
       session.run();
     })

@@ -1,5 +1,6 @@
 const NodeMediaServer = require('./');
 const dotenv = require('dotenv').config();
+const logError = require('./node_logging_service');
 
 const config = {
   rtmp: {
@@ -41,7 +42,7 @@ nms.on('postConnect', (id, args) => {
 });
 
 nms.on('doneConnect', (id, args) => {
-  console.log('[NodeEvent on doneConnect]', `id=${id} args=${JSON.stringify(args)}`);
+  console.log('[NodeEvent on doneConnect]', `id=${id} args=${JSON.stringify(args)}`);  
 });
 
 nms.on('prePublish', (id, StreamPath, args) => {
@@ -52,10 +53,12 @@ nms.on('prePublish', (id, StreamPath, args) => {
 
 nms.on('postPublish', (id, StreamPath, args) => {
   console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
+  logError(`[SYSTEM] Stream with stream path: ${StreamPath}, has started`);
 });
 
 nms.on('donePublish', (id, StreamPath, args) => {
   console.log('[NodeEvent on donePublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
+  logError(`[SYSTEM] Stream with stream path: ${StreamPath}, has ended`);
 });
 
 nms.on('prePlay', (id, StreamPath, args) => {
